@@ -1,0 +1,11 @@
+# ignore config files
+config.py
+
+
+.idea/
+*.swp
+__pycache__/
+*.py[cod]
+
+#temp ms office
+~$*

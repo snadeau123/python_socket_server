@@ -1,0 +1,14 @@
+name: socket_server
+channels:
+- defaults
+dependencies:
+- certifi=2016.2.28=py27_0
+- pip=9.0.1=py27_1
+- python=2.7.13=1
+- setuptools=36.4.0=py27_1
+- vc=9=0
+- vs2008_runtime=9.00.30729.5054=0
+- wheel=0.29.0=py27_0
+- wincertstore=0.2=py27_0
+prefix: C:\Users\sebastien\Anaconda3\envs\socket_server
+
