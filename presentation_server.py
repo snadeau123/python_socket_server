@@ -7,7 +7,7 @@ import time
 import socket
 from thread import *
 
-
+import logo
 from ui import screenwrite
 sw = screenwrite(ymin=13, ymax=23)
 
@@ -29,17 +29,7 @@ except ImportError:
 def initui():
     os.system('clear')
 
-    title = '''             _  _  ____    _  __    ____    _  __    ____               
-            ( \/ )(  _ \  / )/__\  (  _ \  / )/__\  (_  _)              
-             \  /  )   / / //(__)\  )   / / //(__)\  _)(_               
-              \/  (_)\_)(_/(__)(__)(_)\_)(_/(__)(__)(____)              
- ____  ____  ____  ___  ____  _  _  ____   __   ____  ____  _____  _  _ 
-(  _ \(  _ \( ___)/ __)( ___)( \( )(_  _) /__\ (_  _)(_  _)(  _  )( \( )
- )___/ )   / )__) \__ \ )__)  )  (   )(  /(__)\  )(   _)(_  )(_)(  )  ( 
-(__)  (_)\_)(____)(___/(____)(_)\_) (__)(__)(__)(__) (____)(_____)(_)\_)
-    '''
-
-    sw.printStatic(title, 0, 0, 5)
+    sw.printStatic(logo.title, 0, 0, 5)
 
     sw.printStatic('-' * 82, 0, 12)
 
