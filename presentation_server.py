@@ -173,7 +173,7 @@ def keylistener(s):
                 sw.printStatic(slideNumber+'     ', 58, 13, 3)
                 inputNumber = ''
                 sw.printStatic('        ', 57, 14, 4)
-        elif keyinput == '\x08':  # handle backspace
+        elif (keyinput == '\x08') or (keyinput == '\x7f'):  # handle backspace
             inputNumber = inputNumber[:-1]
             sw.printStatic(inputNumber+'     ', 57, 14, 4)
         else:
