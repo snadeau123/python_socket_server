@@ -1,4 +1,5 @@
 import sys
+import os
 
 class screenwrite():
     '''
@@ -30,4 +31,10 @@ class screenwrite():
     def printStatic(self, s, x, y, color=0):
         sys.stdout.write("%s\x1b7\x1b[%d;%df%s\x1b8%s" % (self.C[color], y, x, s, self.C[0]))
         sys.stdout.flush()
+
+    def clearScreen(selfself):
+        try:
+            os.system('cls')
+        except ImportError:
+            os.system('clear')
 

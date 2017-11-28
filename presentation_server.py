@@ -47,7 +47,8 @@ def is_number(s):
     return False
 
 def initui():
-    os.system('clear')
+    sw.clearScreen()
+
 
     sw.printStatic(logo.title, 0, 0, 5)
 
@@ -234,8 +235,6 @@ def clientthreadb(conn):
 
 
 
-
-
 if __name__=='__main__':
 
     #test_roulette()
@@ -243,6 +242,6 @@ if __name__=='__main__':
 
     sw.printStatic('press Enter to Continue...', 0, 11, 5)
     raw_input("")
-    os.system('clear')
-    os.system('cls')
+
+    sw.clearScreen()
 
