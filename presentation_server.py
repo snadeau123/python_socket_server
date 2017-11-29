@@ -26,7 +26,7 @@ except ImportError:
         return ch
 
 bShouldExit = False
-slideNumber = 0
+slideNumber = '0'
 numberConnections = 0
 
 
@@ -123,22 +123,23 @@ def startserver():
         start_new_thread(clientthread ,(conn,rw,rg))
     '''
 
-    #listen for key input
+    # listen for key input
     start_new_thread(keylistener, (s,))
 
     start_new_thread(listen, (s, ))
 
     # now saty awake until user quits
-    while(not bShouldExit):
+    while not bShouldExit:
         time.sleep(5)
         sw.printStatic(numberConnections, 63, 16, 1)
 
     sw.printnl('shutdown complete', 5)
 
 def listen(s):
+    global numberConnections
 
     while 1:
-        #wait to accept a connection - blocking call
+        # wait to accept a connection - blocking call
         try:
             conn, addr = s.accept()
         except socket.error as msg:
@@ -146,10 +147,10 @@ def listen(s):
 
         sw.printnl('Connected with ' + addr[0] + ':' + str(addr[1]))
 
-        #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
-
-
-        start_new_thread(clientthread ,(conn,rw,rg))
+        # start new thread takes 1st argument as a function name to be run,
+        # second is the tuple of arguments to the function.
+        start_new_thread(clientthread ,(conn,))
+        numberConnections = numberConnections + 1
 
     #s.close()
 
@@ -182,32 +183,47 @@ def keylistener(s):
                 sw.printStatic(inputNumber, 57, 14, 4)
 
 
+# Function for handling connections. This will be used to create threads
+def clientthread(conn):
+    global numberConnections
+    global slideNumber
+    previousSlideNumber = slideNumber
+    counter = 0
 
-#Function for handling connections. This will be used to create threads
-def clientthread(conn,rw,rg):
-    #Sending message to connected client
-    conn.send('Welcome to the server. Type something and hit enter\n') #send only takes string
+    # Sending message to connected client
+    conn.send('Welcome to the server\n') # send only takes string
+    # conn.send('%s\n'%(slideNumber))
 
-    #infinite loop so that function do not terminate and thread do not end.
+    # infinite loop so that function do not terminate and thread do not end.
     while True:
+        if(0):
+            # Receiving from client
+            data = conn.recv(1024)
 
-        #Receiving from client
-        data = conn.recv(1024)
-        if not data:
-            break
-        if data == 'q':
-            break
-        if int(data) < 157:
+            # sw.printnl(data)
 
-            conn.sendall('betting on : %s'%data)
+            if not data:
+                break
+            if data.rstrip('\r\n') == 'q':
+                break
+            if data.rstrip('\r\n') == 'r':
+                #conn.sendall(slideNumber)
+                conn.send('%s\n' % str(slideNumber))
 
-            conn.sendall('result is : %s')
+        if(1):
+            time.sleep(1.0)
+            if previousSlideNumber != slideNumber:
+                sw.printnl(slideNumber)
+                conn.send('%s\n'%str(slideNumber))
+                previousSlideNumber = slideNumber
 
 
 
     #came out of loop
     conn.close()
     sw.printnl('connection closed')
+
+    numberConnections = numberConnections - 1
 
 def clientthreadb(conn):
     #Sending message to connected client
