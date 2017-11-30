@@ -13,6 +13,8 @@ import logo
 from ui import screenwrite
 sw = screenwrite(ymin=13, ymax=23)
 
+import config
+
 try:
     from msvcrt import getch  # try to import Windows version
 except ImportError:
@@ -103,7 +105,7 @@ def initui():
 # initialize the server
 def init_server():
     HOST = ''   # Symbolic name meaning all available interfaces
-    PORT = 50007 # Arbitrary non-privileged port
+    PORT = config.port # Arbitrary non-privileged port
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

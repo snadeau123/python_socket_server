@@ -1,5 +1,6 @@
 # Echo client program
 import socket
+import config
 
 
 
@@ -7,9 +8,9 @@ import socket
 class Client(object):
 
     def __init__(self):
-        #self.HOST = '52.229.33.101'  # The remote host
-        self.HOST = '127.0.0.1'
-        self.PORT = 50007  # The same port as used by the server
+        self.HOST = config.server
+        #self.HOST = '127.0.0.1'
+        self.PORT = config.port  # The same port as used by the server
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((self.HOST, self.PORT))
         self.data = self.s.recv(1024)
