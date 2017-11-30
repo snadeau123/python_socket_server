@@ -223,7 +223,10 @@ def keylistener(s):
             break
         elif (keyinput == 't'):
             btestmode = not btestmode
-            sw.printStatic("TEST MODE ACTIVE", 42, 18, 5)
+            if btestmode:
+                sw.printStatic("TEST MODE ACTIVE", 42, 18, 5)
+            else:
+                sw.printStatic("                ", 42, 18, 5)
         elif keyinput == '\r':
             if inputNumber != '':
                 slideNumber = inputNumber
