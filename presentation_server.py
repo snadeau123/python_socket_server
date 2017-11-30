@@ -92,7 +92,8 @@ def init_server():
     HOST = ''   # Symbolic name meaning all available interfaces
     PORT = 50007 # Arbitrary non-privileged port
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.SO_REUSEADDR)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     sw.printnl('Socket created')
 
