@@ -31,6 +31,8 @@ bShouldExit = False
 slideNumber = '0'
 numberConnections = 0
 clientList = []
+btestmode = False
+MaxSlideNumber = 2
 
 
 # Client class to keep status of the connections
@@ -90,7 +92,7 @@ def initui():
         sw.printStatic('|', 41, i)
         sw.printStatic('|', 82, i)
 
-    sw.printStatic("q : Exit ", 0, 11)
+    sw.printStatic("q : Exit     t : Test Mode", 0, 11)
 
     sw.printStatic("current slide : ", 42, 13)
     sw.printStatic("set slide to : ", 42, 14)
@@ -153,9 +155,14 @@ def startserver():
 def slide_updater():
 
     global slideNumber
+    global btestmode
     previousSlideNumber = 0
 
     while 1:
+        if btestmode:
+            time.sleep(2.5)
+            slideNumber = str((int(slideNumber)+1) % MaxSlideNumber)
+
         time.sleep(0.1)
         if previousSlideNumber != slideNumber:
             for client in clientList:
@@ -194,6 +201,7 @@ def keylistener(s):
 
     global bShouldExit
     global slideNumber
+    global btestmode
 
     inputNumber = ''
     while 1:
@@ -204,7 +212,7 @@ def keylistener(s):
                     client.send('q')
                     client.close()
 
-            time.sleep(2)
+            #time.sleep(2)
 
             if platform == "linux" or platform == "linux2":
                 s.shutdown(socket.SHUT_RDWR)
@@ -213,6 +221,9 @@ def keylistener(s):
             sw.printnl('server closing connection', 4)
             bShouldExit = True
             break
+        elif (keyinput == 't'):
+            btestmode = not btestmode
+            sw.printStatic("TEST MODE ACTIVE", 42, 18, 5)
         elif keyinput == '\r':
             if inputNumber != '':
                 slideNumber = inputNumber
