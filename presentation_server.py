@@ -33,6 +33,7 @@ numberConnections = 0
 clientList = []
 
 
+# Client class to keep status of the connections
 class Client(object):
     def __init__(self, connection, id):
         self.id = id
@@ -40,20 +41,28 @@ class Client(object):
         self.active = True
 
     def isActive(self):
+        '''
         try:
             self.conn.send("ping")
         except socket.error as msg:
             self.active = False
+        '''
         return self.active
 
     def close(self):
         self.conn.close()
         self.active = False
 
+    def send(self, data):
+        try:
+            self.conn.send(data)
+        except socket.error as msg:
+            self.active = False
 
 
 
-
+# helper class to check if value is a number
+# returns a boolean
 def is_number(s):
     try:
         float(s)
@@ -70,6 +79,8 @@ def is_number(s):
 
     return False
 
+
+# initialize the UI
 def initui():
     sw.clearScreen()
     sw.printStatic(logo.title, 0, 0, 5)
@@ -87,7 +98,7 @@ def initui():
     sw.printStatic("Active Connections : ", 42, 16, 1)
 
 
-# initialize socket
+# initialize the server
 def init_server():
     HOST = ''   # Symbolic name meaning all available interfaces
     PORT = 50007 # Arbitrary non-privileged port
@@ -109,7 +120,9 @@ def init_server():
     return s
 
 
-#start server
+# main function that calls the initialization of the server
+# launches threads to listen to input keys, listen to for new clients and update/push the slide number
+# also keep tracks of connections that are alive
 def startserver():
 
     # build server  ui
@@ -130,10 +143,13 @@ def startserver():
         for client in clientList:
             if client.isActive():
                 numberConnections += 1
-        sw.printStatic(numberConnections, 63, 16, 1)
+        sw.printStatic('%d      '%numberConnections, 63, 16, 1)
 
     sw.printnl('shutdown complete', 5)
 
+
+# check if slide number has changed
+# push the new slide number to the clients
 def slide_updater():
 
     global slideNumber
@@ -144,10 +160,12 @@ def slide_updater():
         if previousSlideNumber != slideNumber:
             for client in clientList:
                 if client.isActive():
-                    client.conn.send('%s\n'%str(slideNumber))
+                    client.send('%s\n'%str(slideNumber))
             previousSlideNumber = slideNumber
 
 
+# Listens to for connections
+# create a new client object for each new connections and start a separate thread to handle messages from client
 def listen(s):
     global numberConnections
 
@@ -164,22 +182,14 @@ def listen(s):
 
         sw.printnl('Connected with ' + addr[0] + ':' + str(addr[1]))
 
-        # start new thread takes 1st argument as a function name to be run,
-        # second is the tuple of arguments to the function.
-
         # create a new client
         clientList.append(Client(conn, len(clientList)))
 
         start_new_thread(client_thread,(clientList[-1],))
 
-        #numberConnections = numberConnections + 1
 
-        # maybe try to :
-        # store all connections in an array
-        # loop through array to send updates to clients
-        # create a thread per client
-        # only use the thread to listen to quit message
-
+# Listen to input keys from the console
+# handles slide number input and 'q' for quit
 def keylistener(s):
 
     global bShouldExit
@@ -191,7 +201,7 @@ def keylistener(s):
         if keyinput == 'q':
             for client in clientList:
                 if client.isActive():
-                    client.conn.send('q')
+                    client.send('q')
                     client.close()
 
             time.sleep(2)
@@ -224,8 +234,8 @@ def client_thread(client):
     global slideNumber
 
     # Sending message to connected client
-    client.conn.send('Welcome to the server\n') # send only takes string
-    client.conn.send('%s\n' % str(slideNumber))
+    client.send('Welcome to the server\n') # send only takes string
+    client.send('%s\n' % str(slideNumber))
 
     # infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -238,14 +248,12 @@ def client_thread(client):
             if data.rstrip('\r\n') == 'q':
                 break
             if data.rstrip('\r\n') == 'r':
-                client.conn.send('%s\n' % str(slideNumber))
+                client.send('%s\n' % str(slideNumber))
 
     #came out of loop
     client.close()
     sw.printnl('connection closed')
     client.active = False
-
-    #numberConnections = numberConnections - 1
 
 
 if __name__=='__main__':

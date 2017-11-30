@@ -13,7 +13,7 @@ def clientThread(client):
 if __name__ == '__main__':
     clients = []
 
-    for i in range(100):
+    for i in range(5):
         time.sleep(0.01)
         print "loading thread : %d"%i
         clients.append(test_client.Client())
