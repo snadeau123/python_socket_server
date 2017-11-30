@@ -4,6 +4,8 @@ import sys
 import os
 import time
 
+from sys import platform
+
 import socket
 from thread import *
 
@@ -90,7 +92,7 @@ def init_server():
     HOST = ''   # Symbolic name meaning all available interfaces
     PORT = 50007 # Arbitrary non-privileged port
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.SO_REUSEADDR)
 
     sw.printnl('Socket created')
 
@@ -134,15 +136,15 @@ def startserver():
 def slide_updater():
 
     global slideNumber
-    previousSlideNumber = slideNumber
+    previousSlideNumber = 0
 
-    for client in clientList:
-        if client.isActive():
-            time.sleep(0.1)
-            if previousSlideNumber != slideNumber:
-                sw.printnl(slideNumber)
-                client.conn.send('%s\n'%str(slideNumber))
-                previousSlideNumber = slideNumber
+    while 1:
+        time.sleep(0.1)
+        if previousSlideNumber != slideNumber:
+            for client in clientList:
+                if client.isActive():
+                    client.conn.send('%s\n'%str(slideNumber))
+            previousSlideNumber = slideNumber
 
 
 def listen(s):
@@ -191,7 +193,11 @@ def keylistener(s):
                     client.conn.send('q')
                     client.close()
 
-            #s.shutdown(socket.SHUT_RDWR)
+            time.sleep(2)
+
+            if platform == "linux" or platform == "linux2":
+                s.shutdown(socket.SHUT_RDWR)
+
             s.close()
             sw.printnl('server closing connection', 4)
             bShouldExit = True
