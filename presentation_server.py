@@ -28,6 +28,28 @@ except ImportError:
 bShouldExit = False
 slideNumber = '0'
 numberConnections = 0
+clientList = []
+
+
+class Client(object):
+    def __init__(self, connection, id):
+        self.id = id
+        self.conn = connection
+        self.active = True
+
+    def isActive(self):
+        try:
+            self.conn.send("ping")
+        except socket.error as msg:
+            self.active = False
+        return self.active
+
+    def close(self):
+        self.conn.close()
+        self.active = False
+
+
+
 
 
 def is_number(s):
@@ -48,25 +70,19 @@ def is_number(s):
 
 def initui():
     sw.clearScreen()
-
-
     sw.printStatic(logo.title, 0, 0, 5)
-
     sw.printStatic('-' * 82, 0, 12)
 
     for i in range(13,24):
         sw.printStatic('|', 41, i)
         sw.printStatic('|', 82, i)
 
-
     sw.printStatic("q : Exit ", 0, 11)
 
-    #test layour
     sw.printStatic("current slide : ", 42, 13)
     sw.printStatic("set slide to : ", 42, 14)
 
     sw.printStatic("Active Connections : ", 42, 16, 1)
-
 
 
 # initialize socket
@@ -78,7 +94,7 @@ def init_server():
 
     sw.printnl('Socket created')
 
-    #Bind socket to local host and port
+    # Bind socket to local host and port
     try:
         s.bind((HOST, PORT))
     except socket.error as msg:
@@ -96,47 +112,45 @@ def startserver():
     # build server  ui
     initui()
 
-
     sw.printnl('initializing server')
     s = init_server()
 
-
-    #Start listening on socket
-    s.listen(10)
-    sw.printnl('Socket now listening', 2)
-
-
-    # Start window
-    #sw.printStatic("STARTING", 51, 13, 1)
-    #sw.printStatic("ACTIVE  ", 51, 13, 3)
-
-
-
-    #now keep talking with the client
-    '''
-    while 1:
-        #wait to accept a connection - blocking call
-        conn, addr = s.accept()
-        sw.printnl('Connected with ' + addr[0] + ':' + str(addr[1]))
-
-        #start new thread takes 1st argument as a function name to be run, second is the tuple of arguments to the function.
-        start_new_thread(clientthread ,(conn,rw,rg))
-    '''
-
     # listen for key input
     start_new_thread(keylistener, (s,))
-
     start_new_thread(listen, (s, ))
+    start_new_thread(slide_updater, tuple())
 
-    # now saty awake until user quits
+    # now stay awake until user quits
     while not bShouldExit:
         time.sleep(5)
+        numberConnections = 0
+        for client in clientList:
+            if client.isActive():
+                numberConnections += 1
         sw.printStatic(numberConnections, 63, 16, 1)
 
     sw.printnl('shutdown complete', 5)
 
+def slide_updater():
+
+    global slideNumber
+    previousSlideNumber = slideNumber
+
+    for client in clientList:
+        if client.isActive():
+            time.sleep(0.1)
+            if previousSlideNumber != slideNumber:
+                sw.printnl(slideNumber)
+                client.conn.send('%s\n'%str(slideNumber))
+                previousSlideNumber = slideNumber
+
+
 def listen(s):
     global numberConnections
+
+    #Start listening on socket
+    s.listen(10)
+    sw.printnl('Socket now listening', 2)
 
     while 1:
         # wait to accept a connection - blocking call
@@ -149,10 +163,19 @@ def listen(s):
 
         # start new thread takes 1st argument as a function name to be run,
         # second is the tuple of arguments to the function.
-        start_new_thread(clientthread ,(conn,))
-        numberConnections = numberConnections + 1
 
-    #s.close()
+        # create a new client
+        clientList.append(Client(conn, len(clientList)))
+
+        start_new_thread(client_thread,(clientList[-1],))
+
+        #numberConnections = numberConnections + 1
+
+        # maybe try to :
+        # store all connections in an array
+        # loop through array to send updates to clients
+        # create a thread per client
+        # only use the thread to listen to quit message
 
 def keylistener(s):
 
@@ -163,6 +186,11 @@ def keylistener(s):
     while 1:
         keyinput = getch()
         if keyinput == 'q':
+            for client in clientList:
+                if client.isActive():
+                    client.conn.send('q')
+                    client.close()
+
             #s.shutdown(socket.SHUT_RDWR)
             s.close()
             sw.printnl('server closing connection', 4)
@@ -184,76 +212,37 @@ def keylistener(s):
 
 
 # Function for handling connections. This will be used to create threads
-def clientthread(conn):
+def client_thread(client):
     global numberConnections
     global slideNumber
-    previousSlideNumber = slideNumber
-    counter = 0
 
     # Sending message to connected client
-    conn.send('Welcome to the server\n') # send only takes string
-    # conn.send('%s\n'%(slideNumber))
+    client.conn.send('Welcome to the server\n') # send only takes string
+    client.conn.send('%s\n' % str(slideNumber))
 
     # infinite loop so that function do not terminate and thread do not end.
     while True:
-        if(0):
+        if(1):
             # Receiving from client
-            data = conn.recv(1024)
-
-            # sw.printnl(data)
+            data = client.conn.recv(1024)
 
             if not data:
                 break
             if data.rstrip('\r\n') == 'q':
                 break
             if data.rstrip('\r\n') == 'r':
-                #conn.sendall(slideNumber)
-                conn.send('%s\n' % str(slideNumber))
-
-        if(1):
-            time.sleep(1.0)
-            if previousSlideNumber != slideNumber:
-                sw.printnl(slideNumber)
-                conn.send('%s\n'%str(slideNumber))
-                previousSlideNumber = slideNumber
-
-
+                client.conn.send('%s\n' % str(slideNumber))
 
     #came out of loop
-    conn.close()
+    client.close()
     sw.printnl('connection closed')
+    client.active = False
 
-    numberConnections = numberConnections - 1
-
-def clientthreadb(conn):
-    #Sending message to connected client
-    conn.send('Welcome to the server. Type something and hit enter\n') #send only takes string
-
-    #infinite loop so that function do not terminate and thread do not end.
-    while True:
-
-        #Receiving from client
-        data = conn.recv(1024)
-        if not data:
-            break
-
-        clickpos = map(int, data.split(','))
-
-        conn.sendall('result is : %s'%str(clickpos))
-        sw.printStatic(" "*10, 51, 14, 3)
-        sw.printStatic(str(clickpos), 51, 14, 3)
-
-
-
-    #came out of loop
-    conn.close()
-    sw.printnl('connection closed')
-
+    #numberConnections = numberConnections - 1
 
 
 if __name__=='__main__':
 
-    #test_roulette()
     startserver()
 
     sw.printStatic('press Enter to Continue...', 0, 11, 5)
