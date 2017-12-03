@@ -34,7 +34,8 @@ slideNumber = '0'
 numberConnections = 0
 clientList = []
 btestmode = False
-MaxSlideNumber = config.max_slide_number
+slides = []
+#MaxSlideNumber = config.max_slide_number
 
 
 # Client class to keep status of the connections
@@ -97,7 +98,7 @@ def initui():
     sw.printStatic("q : Exit     t : Test Mode", 0, 11)
 
     sw.printStatic("current slide : ", 42, 13)
-    sw.printStatic("set slide to : ", 42, 14)
+    sw.printStatic("set slide to (0-%d) : "%(len(slides)-1), 42, 14)
 
     sw.printStatic("Active Connections : ", 42, 16, 1)
 
@@ -158,18 +159,20 @@ def slide_updater():
 
     global slideNumber
     global btestmode
+    global slides
     previousSlideNumber = 0
 
     while 1:
         if btestmode:
             time.sleep(2.5)
-            slideNumber = str((int(slideNumber)+1) % MaxSlideNumber)
+            slideNumber = str((int(slideNumber)+1) % len(slides))
 
         time.sleep(0.1)
         if previousSlideNumber != slideNumber:
             for client in clientList:
                 if client.isActive():
-                    client.send('%s\n'%str(slideNumber))
+                    client.send('%s\n' % slides[int(float(slideNumber))])
+                    sw.printnl(slides[int(float(slideNumber))])
             previousSlideNumber = slideNumber
 
 
@@ -231,17 +234,18 @@ def keylistener(s):
                 sw.printStatic("                ", 42, 18, 5)
         elif keyinput == '\r':
             if inputNumber != '':
-                slideNumber = inputNumber
-                sw.printStatic(slideNumber+'     ', 58, 13, 3)
-                inputNumber = ''
-                sw.printStatic('        ', 57, 14, 4)
+                if float(inputNumber) < len(slides):
+                    slideNumber = inputNumber
+                    sw.printStatic(slideNumber+'     ', 58, 13, 3)
+                    inputNumber = ''
+                    sw.printStatic('        ', 64, 14, 4)
         elif (keyinput == '\x08') or (keyinput == '\x7f'):  # handle backspace
             inputNumber = inputNumber[:-1]
-            sw.printStatic(inputNumber+'     ', 57, 14, 4)
+            sw.printStatic(inputNumber+'     ', 64, 14, 4)
         else:
             if is_number(keyinput):
                 inputNumber += keyinput
-                sw.printStatic(inputNumber, 57, 14, 4)
+                sw.printStatic(inputNumber, 64, 14, 4)
 
 
 # Function for handling connections. This will be used to create threads
@@ -267,16 +271,23 @@ def client_thread(client):
             if data.rstrip('\r\n') == 'q':
                 break
             if data.rstrip('\r\n') == 'r':
-                client.send('%s\n' % str(slideNumber))
+                client.send('%s\n' % slides[int(float(slideNumber))])
+
 
     #came out of loop
     client.close()
     sw.printnl('connection closed')
     client.active = False
 
+def load_text(file):
+    global slides
+    content_file = open(file, 'r')
+    slides = content_file.readlines()
+
 
 if __name__=='__main__':
 
+    load_text(config.content_file)
     startserver()
 
     sw.printStatic('press Enter to Continue...', 0, 11, 5)
