@@ -34,7 +34,7 @@ slideNumber = '0'
 numberConnections = 0
 clientList = []
 btestmode = False
-MaxSlideNumber = 2
+MaxSlideNumber = config.max_slide_number
 
 
 # Client class to keep status of the connections
@@ -257,7 +257,10 @@ def client_thread(client):
     while True:
         if(1):
             # Receiving from client
-            data = client.conn.recv(1024)
+            try:
+                data = client.conn.recv(1024)
+            except socket.error as msg:
+                break
 
             if not data:
                 break
