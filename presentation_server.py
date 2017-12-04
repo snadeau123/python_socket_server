@@ -172,7 +172,7 @@ def slide_updater():
             for client in clientList:
                 if client.isActive():
                     client.send('%s\n' % slides[int(float(slideNumber))])
-                    sw.printnl(slides[int(float(slideNumber))])
+                    #sw.printnl(slides[int(float(slideNumber))])
             previousSlideNumber = slideNumber
 
 
