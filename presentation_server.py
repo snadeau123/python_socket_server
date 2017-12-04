@@ -254,8 +254,8 @@ def client_thread(client):
     global slideNumber
 
     # Sending message to connected client
-    client.send('Welcome to the server\n') # send only takes string
-    client.send('%s\n' % str(slideNumber))
+    client.send('Welcome\n')
+    client.send('%s\n' % slides[int(float(slideNumber))])
 
     # infinite loop so that function do not terminate and thread do not end.
     while True:
