@@ -171,8 +171,8 @@ def slide_updater():
         if previousSlideNumber != slideNumber:
             for client in clientList:
                 if client.isActive():
-                    client.send('%s\n' % slides[int(float(slideNumber))])
-                    #sw.printnl(slides[int(float(slideNumber))])
+                    client.send('%s|%s\n' % (slideNumber, slides[int(float(slideNumber))]))
+                    sw.printnl(slides[int(float(slideNumber))])
             previousSlideNumber = slideNumber
 
 
@@ -255,7 +255,7 @@ def client_thread(client):
 
     # Sending message to connected client
     client.send('Welcome\n')
-    client.send('%s\n' % slides[int(float(slideNumber))])
+    client.send('%s|%s\n' % (slideNumber, slides[int(float(slideNumber))]))
 
     # infinite loop so that function do not terminate and thread do not end.
     while True:
@@ -271,7 +271,7 @@ def client_thread(client):
             if data.rstrip('\r\n') == 'q':
                 break
             if data.rstrip('\r\n') == 'r':
-                client.send('%s\n' % slides[int(float(slideNumber))])
+                client.send('%s|%s\n' % (slideNumber, slides[int(float(slideNumber))]))
 
 
     #came out of loop
