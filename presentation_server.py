@@ -195,9 +195,9 @@ def listen(s):
         sw.printnl('Connected with ' + addr[0] + ':' + str(addr[1]))
 
         # create a new client
-        clientList.append(Client(conn, len(clientList)))
+        clientList.append(Client(conn, str(addr[1])))
 
-        start_new_thread(client_thread,(clientList[-1],))
+        start_new_thread(client_thread, (clientList[-1],))
 
 
 # Listen to input keys from the console
@@ -276,7 +276,7 @@ def client_thread(client):
 
     #came out of loop
     client.close()
-    sw.printnl('connection closed')
+    sw.printnl('connection with %s closed' % client.id)
     client.active = False
 
 def load_text(file):
